@@ -109,7 +109,7 @@ def check_similarity_for_protein_pair(prot1_pfam, prot2_pfam, threshold):
     ##########################
     similarity_score = compute_similarity_score(prot1_pfam, prot2_pfam, threshold)
     # If similarity score is above threshold they are assigned a "similar" label, otherwise "different"
-    # Remember that if the similarity score returns None then they are ambiguous
+    # If it returns None then they are ambiguous
 
     if similarity_score == None:
         return "ambiguous", similarity_score
@@ -121,14 +121,10 @@ def check_similarity_for_protein_pair(prot1_pfam, prot2_pfam, threshold):
     ###  END CODING HERE  ####
     ##########################
 
-# If you will use the numeric score for Pfam (similar to GO), you may want to use check_similarity_for_protein_pair
-# with other arguments. See the example below.
-# def check_similarity_for_protein_pair(score, threshold):
-#    pass
-
-
-
-    print("Protein " + pair[0] + " and protein " + pair[1] + " are " + compute_similarity_score(pfam_data1, pfam_data2))
+    # If you will use the numeric score for Pfam (similar to GO), you may want to use check_similarity_for_protein_pair
+    # with other arguments. See the example below.
+    # def check_similarity_for_protein_pair(score, threshold):
+    #    pass
 
 def assign_homology(pfam_data, protein_pairs, threshold, csv_file = None):
     """
@@ -145,10 +141,11 @@ def assign_homology(pfam_data, protein_pairs, threshold, csv_file = None):
 
     for protein_pair in protein_pairs:
         similarity, similarity_score = check_similarity_for_protein_pair(pfam_data[protein_pair[0]], pfam_data[protein_pair[1]], threshold)
-        #Saving scores in a csv file
+        ####Saving scores in a csv file to be later used to plot the scores frequencies####
         if csv_file is not None:
             if similarity_score is not None:
                 csv_output += str(round(similarity_score, 1)) + " "
+        ###################################################################################
         pfam_homology[protein_pair] = similarity
     csv_file.write(csv_output)
     ##########################
@@ -200,41 +197,7 @@ def read_protein_ids_file(filename):
     ### END CODING HERE ###
     #######################
     return protein_ids
-""""
 
-####################################
-##COMPLETELY EXPERIMENTAL BULLSHIT##
-####################################
-
-uniprot_ids = read_protein_ids_file("../data/uniprot_id_list.txt")
-protein_lookup = {}
-threshold =0
-for uniprot_id in uniprot_ids:
-    xml_data = retrieve_pfam_data(uniprot_id)
-    output_file = open("../Pfam/" + uniprot_id + ".xml", "r+")
-    save_pfam_response(xml_data, output_file)
-    pfam_data = parse_pfam_xml(xml_data)
-    protein_lookup[uniprot_id] = pfam_data
-
-protein_pairs = generate_all_possible_protein_pairs(uniprot_ids)
-total_pairs = len(protein_pairs)
-counts = {"sim": 0, "diff": 0, "amb": 0}
-intervals = 10
-counts = [i for i in range(intervals+1)]
-for pair in protein_pairs:
-    similarity = compute_similarity_score(protein_lookup[pair[0]], protein_lookup[pair[1]], threshold)
-    if similarity != None:
-        idx = int(similarity*intervals)
-        counts[idx] += 1
-#    if similarity > 0:
-    output = "%(p1)s\t%(p2)s\t%(sim)s" % {'p1':pair[0], 'p2': pair[1], 'sim': similarity}
-
-    print(output)
-for idx, count in enumerate(counts):
-    if count > 0:
-        print("Between " + str(float(idx)/intervals) + " and " + str(float(idx)/intervals + 9/float(10*intervals)) + ":\t" + str(count))
-print(counts)
-"""
 def write_output(pfam_homology, output_file):
     """
     Writes in an output file the all of the protein pairs and their similarity/dissimilarity.
@@ -268,7 +231,7 @@ def main(protein_ids_file, output_file, xml_folder, csv_file, threshold = 0.5):
     #######################
     ### END CODING HERE ###
     #######################
-    pass
+    
 
 if __name__ == "__main__":
 
@@ -284,7 +247,7 @@ if __name__ == "__main__":
     # We added a new argument to be able to control the similarity threshold
     parser.add_argument("-threshold", "--similarity_threshold", help="Threshold of similarity", required=False, default=0.5, type=int)
     # This argument saves scores to a csv file
-    parser.add_argument("-csv", "--csv_file", help="CSV File Path", required=True)
+    parser.add_argument("-csv", "--csv_file", help="CSV File Path", required=False, default=None)
 
     ##########################
     ### START CODING HERE ####
@@ -304,7 +267,7 @@ if __name__ == "__main__":
     threshold = args.similarity_threshold
     csv_file = args.csv_file
 
-    main(protein_ids_file, output_file, xml_folder, csv_file, threshold)
+    main(protein_ids_file=protein_ids_file, output_file=output_file, xml_folder=xml_folder, csv_file=csv_file, threshold=threshold)
 
     
 

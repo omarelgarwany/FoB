@@ -123,11 +123,10 @@ def plot_evalue_distribution(blast_dict, png_filename="DistributionEValue.png", 
     nonzero_indices = numpy.nonzero(sorted_e_val)[0]
     pseudo_count = sorted_e_val[nonzero_indices[0]] / 1000.0
     
-    minus_log_evalues = map(lambda x: math.log1
-        0(x + pseudo_count), blast_dict.values())
-    ###Adding average evalue####
-    pylab.title("Average log(e-value):" + str(numpy.mean(minus_log_evalues)))
-    ############################
+    log_evalues = map(lambda x: math.log10(x + pseudo_count), blast_dict.values())
+    ###Adding average log(evalue)####
+    pylab.title("Average log(e-value):" + str(numpy.mean(log_evalues)))
+    #################################
     pylab.hist(minus_log_evalues)
     pylab.xlabel("log(e-value)")
     pylab.ylabel("Frequency")
@@ -177,10 +176,9 @@ def main(uniprot_id_list, query_folder, db, psiblast, output_filename, output_pn
         # Store all the uniprot IDs in the uniprot_ids.
         # Parse and store the blast result in the blast_dict.
         line = clean_uniprot(line)
-        blast_result = blast(db, line + ".fasta", query_folder, output_filename, psiblast,evalue=evalue)
-        #print(blast_result)
+        blast_result = blast(db=db, query=line + ".fasta", query_folder=query_folder, blast_path=output_filename, psiblast=psiblast,evalue=evalue)
         uniprot_ids.append(line)
-        blast_dict = parse_blast_result(blast_result, blast_dict)
+        blast_dict = parse_blast_result(blast_result=blast_result, blast_dict=blast_dict)
 
         ##########################
         ###  END CODING HERE  ####
@@ -199,7 +197,9 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output_file", help="output file", required=True)
     parser.add_argument("-opng", "--output_png", help="output png file", required=False)
     parser.add_argument("-psi", "--psiblast", dest="psiblast", action="store_true", help="If flagged, run PSI-BLAST instead of BLASTP")
+    #Adding an evalue threshold command line argument
     parser.add_argument("-eval", "--evalue", required=False, default=10)
+    
     args = parser.parse_args()
 
     # Assign the parsed arguments to the corresponding variables.
@@ -213,7 +213,5 @@ if __name__ == "__main__":
     output_png = args.output_png
     evalue = args.evalue
     
-    #print(args)
-
     main(uniprot_id_list, query_folder, db, psiblast, output_filename, output_png, evalue)
 
