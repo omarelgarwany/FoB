@@ -21,10 +21,6 @@ def fetch_one_fasta(uniprot_id):
     # Define the variable 'url' as a string with the URL to the Fasta formatted sequence of the uniProtID
     # in the uniprot website (www.uniprot.org).
 
-    #The url format is http://www.uniprot.org/uniprot/{protein_id}.fasta
-    #Create the url based on the protein id
-    url = "http://www.uniprot.org/uniprot/" + uniprot_id + ".fasta"
-    print("The protein url is: " + url)
     ##########################
     ###  END CODING HERE  ####
     ##########################
@@ -51,8 +47,7 @@ def fetch_all_sequences(query_folder, uniprot_ids, database_file):
     if not query_folder.endswith("/"):
         query_folder += "/"
 
-    #print("Processing the list of ids...")
-
+    print("Processing the list of ids...")
 
     for line in uniprot_ids:
         ##########################
@@ -63,22 +58,6 @@ def fetch_all_sequences(query_folder, uniprot_ids, database_file):
         # Store all the fasta sequences in one single fasta file as well. These individual files will be used
         # as (PSI-)BLAST queries later on.
 
-        #Looks like some lines end with a line break and some end with a space and then a line break
-        if line.endswith("\n"):
-        	line = line[0:-1]
-        if line.endswith(" "):
-        	line = line[0:-1]
-
-        #Fetching the fasta sequence based on uniprot_id
-        fasta_seq = fetch_one_fasta(line)
-
-        #Storing protein sequences in the queries folder each one in a separate file named {uniprot_id}.fasta
-        queries_protein = open(query_folder + line + ".fasta", "w")
-        queries_protein.write(fasta_seq)
-        queries_protein.close()
-
-        #Storing the fast sequence in the database file
-        database_file.write(fasta_seq)
         ##########################
         ###  END CODING HERE  ####
         ##########################
