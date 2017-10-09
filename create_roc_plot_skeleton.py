@@ -111,11 +111,11 @@ def scan_blast_pfam(blast_labels, pfam_labels):
                 TN += 1
     return {'TP': TP, 'TN': TN, 'FP': FP, 'FN': FN}
 
-def compute_TPR_FPR(psib, pfam):
+def compute_TPR_FPR(blast_labels, pfam_labels):
     """
     This function calculates the TPR and FPR given pfam and blast labels for protein pairs
     """
-    scan_result = scan_blast_pfam(psib, pfam)
+    scan_result = scan_blast_pfam(blast_labels, pfam_labels)
     if scan_result['TP'] == 0 and scan_result['FN'] == 0:
         TPR = 0
     else:
@@ -127,9 +127,11 @@ def compute_TPR_FPR(psib, pfam):
         FPR = float(scan_result['FP'])/(scan_result['TN'] + scan_result['FP'])
     return TPR, FPR
 
-def save_plot_as_csv(x, y,plot_points_file):
-
-    csv_file = open(plot_points_file, "w")
+def save_plot_as_csv(x, y,csv_file):
+    """
+    Saves TPR vs. FPR in a csv file to be used later (for example to plot both blast and psi-blast together) 
+    """
+    csv_file = open(csv_file, "w")
     output = ""
     for i in range(len(x)):
         output += str(x[i])
@@ -141,7 +143,7 @@ def save_plot_as_csv(x, y,plot_points_file):
         if i < len(y) - 1:
              output += " "
     csv_file.write(output)
-def roc_plot(blast_evalues, benchmark_dict, png_filename, plot_points_file):
+def roc_plot(blast_evalues, benchmark_dict, png_filename, csv_file):
     """
     Draw the ROC plot for a given set of e-values and corresponding benchmark classifications.
 
@@ -194,7 +196,7 @@ def roc_plot(blast_evalues, benchmark_dict, png_filename, plot_points_file):
     x = numpy.array(x) / float(x[-1]) # At this point, x[-1] = sum(benchmark_dict.values() == "different")
     y = numpy.array(y) / float(y[-1]) #                y[-1] = sum(benchmark_dict.values() == "similar")
 
-    save_plot_as_csv(x, y, plot_points_file)
+    save_plot_as_csv(x, y, csv_file)
 
     ### Figure out the AUC
     auc = integrate(x, y)
@@ -208,13 +210,13 @@ def roc_plot(blast_evalues, benchmark_dict, png_filename, plot_points_file):
     pylab.savefig(png_filename)
 
 
-def main(blast_results_file, benchmark_results_file, png_file, plot_points_file):
+def main(blast_results_file, benchmark_results_file, png_file, csv_file):
     # Parse the input files and retrieve every protein pair's e-value and benchmark classification.
     blast_evalues = parse_blast_results(blast_results_file)
     benchmark_results = parse_benchmark_results(benchmark_results_file)
     
     # Draw and save the ROC plot
-    roc_plot(blast_evalues, benchmark_results, png_file, plot_points_file)
+    roc_plot(blast_evalues, benchmark_results, png_file, csv_file)
 
 
 if __name__ == "__main__":
@@ -222,13 +224,13 @@ if __name__ == "__main__":
     parser.add_argument("-iblast","--input_blast_results", help="tab-separated BLAST results file", required=True)
     parser.add_argument("-ibench","--input_benchmark_results", help="tab-separated benchmark classification file", required=True)
     parser.add_argument("-o", "--output_png", help="output png file", required=True)
-    parser.add_argument("-points", "--plot_points", help="Plot points", required=True)
+    parser.add_argument("-csv", "--csv_file", help="Plot points CSV File", required=True)
 
     args = parser.parse_args()
     
     blast_file = args.input_blast_results
     benchmark_file = args.input_benchmark_results
     png_file = args.output_png
-    plot_points_file = args.plot_points
+    csv_file = args.csv_file
 
-    main(blast_file,benchmark_file, png_file, plot_points_file)
+    main(blast_results_file=blast_file,benchmark_results_file=benchmark_file, png_file=png_file, csv_file=csv_file)
